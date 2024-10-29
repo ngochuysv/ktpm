@@ -1,4 +1,5 @@
 import { Dayjs } from 'dayjs';
+import React from 'react';
 
 export type InputType = 'INPUT' | 'NUMBER' | 'SELECT' | 'DATE' | 'BUTTON';
 
