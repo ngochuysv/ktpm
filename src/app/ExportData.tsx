@@ -1,11 +1,19 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-undef */
 /* eslint-disable prettier/prettier */
 
+import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  EditOutlined,
+} from '@ant-design/icons';
 import {
   Button,
   Form,
   Input,
   InputNumber,
+  Select,
   Table,
   TableProps,
   Tooltip,
@@ -13,17 +21,32 @@ import {
 import { useCallback, useState } from 'react';
 import { Controller } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
-import { listFieldCustomer } from './constant';
-import { DataTypeProduct, EditableCellProps, InputTypeField } from './type';
+import { listFieldCustomer, listProduct } from './constant';
+import {
+  DataRequest,
+  DataTypeProduct,
+  EditableCellProps,
+  InputTypeField,
+} from './type';
 
-function ExportData(props: { control: any; errors: any, 
-  // dataRequest: DataRequest;
-// setDataRequest: (data: DataRequest) => void();
- }) {
-  const { control, errors } = props;
+function ExportData(props: {
+  control: any;
+  errors: any;
+  dataRequest: DataRequest;
+  setDataRequest: (data: DataRequest) => void;
+  dataTable: any;
+  setDataTable: (data: any) => void;
+}) {
+  const {
+    control,
+    errors,
+    dataRequest,
+    setDataRequest,
+    dataTable,
+    setDataTable,
+  } = props;
 
   const [form] = Form.useForm();
-  const [dataTable, setDataTable] = useState<DataTypeProduct[]>();
   const [editingKey, setEditingKey] = useState('');
 
   const isEditing = (record: DataTypeProduct) => record.id === editingKey;
@@ -52,6 +75,10 @@ function ExportData(props: { control: any; errors: any,
               disabled={config.disabled}
               onChange={({ target }) => {
                 onChange(target.value);
+                setDataRequest({
+                  ...dataRequest,
+                  [config.field]: target.value,
+                });
               }}
               onBlur={({ target }) => {
                 onBlur();
@@ -70,28 +97,113 @@ function ExportData(props: { control: any; errors: any,
 
   // ============= EDIT TABLE ==================
 
+  const edit = (record: DataTypeProduct) => {
+    form.setFieldsValue({ ...record });
+    setEditingKey(record.id);
+  };
+
+  const cancel = () => {
+    const newData = dataTable?.length ? dataTable : [];
+    const index = newData.findIndex((item: any) => editingKey === item.id);
+    const row = newData.find((item: any) => editingKey === item.id);
+
+    if (row) {
+      if (index > -1) {
+        newData.splice(index, 1);
+        setDataTable(newData);
+        setEditingKey('');
+      } else {
+        newData.push(row);
+        setDataTable(newData);
+        setEditingKey('');
+      }
+      form.resetFields();
+    }
+  };
+
+  const save = async (key: React.Key) => {
+    try {
+      const row = (await form.validateFields()) as DataTypeProduct;
+
+      const newData = dataTable?.length ? dataTable : [];
+      const index = newData.findIndex((item: any) => key === item.id);
+      if (index > -1) {
+        const item = newData[index];
+        newData.splice(index, 1, {
+          ...item,
+          ...row,
+        });
+        setDataTable(newData);
+        setEditingKey('');
+      } else {
+        newData.push(row);
+        setDataTable(newData);
+        setEditingKey('');
+      }
+    } catch (errInfo) {
+      console.log('Validate Failed:', errInfo);
+    }
+  };
+
+  const handleAdd = () => {
+    const newData = dataTable?.length ? dataTable : [];
+
+    const id = uuidv4();
+    newData.push({
+      id,
+      code: '',
+      name: '',
+      price: 0,
+      quantity: 0,
+      totalAmount: 0,
+    });
+    setDataTable(newData);
+    setEditingKey(id);
+  };
+
+  // parseData
+  const parseData = useCallback(
+    (record: any, field: string) => {
+      if (['price', 'quantity', 'totalAmount'].includes(field)) {
+        return (
+          <span>
+            {new Intl.NumberFormat('vi-VN').format(record[field]) || 0}
+          </span>
+        );
+      }
+      return (
+        <span title={record[field]?.toString()} className="truncate">
+          {record[field] || '--'}
+        </span>
+      );
+    },
+    [dataTable, editingKey]
+  );
+
   // column field thông tin sản phầm
   const columnTable = [
     {
       title: 'Mã SP',
-      dataIndex: 'id',
-      width: 120,
+      dataIndex: 'code',
+      width: 200,
       editable: true,
-      isRequired: false,
+      isRequired: true,
     },
     {
       title: 'Tên SP',
       dataIndex: 'name',
       width: 200,
-      editable: false,
+      editable: true,
       isRequired: true,
+      render: (_: any, record: DataTypeProduct) => parseData(record, 'name'),
     },
     {
       title: 'Đơn giá',
       dataIndex: 'price',
       width: 180,
-      editable: false,
+      editable: true,
       isRequired: true,
+      render: (_: any, record: DataTypeProduct) => parseData(record, 'price'),
     },
     {
       title: 'Số lượng',
@@ -104,42 +216,47 @@ function ExportData(props: { control: any; errors: any,
       title: 'Thành tiền',
       dataIndex: 'totalAmount',
       width: 180,
-      editable: false,
+      editable: true,
       isRequired: true,
+      render: (_: any, record: DataTypeProduct) =>
+        parseData(record, 'totalAmount'),
     },
     {
       title: '',
       dataIndex: 'actions',
       width: 80,
       editable: false,
-      // render: (_: any, record: DataTypeProduct) => {
-      //   const editable = isEditing(record);
-      //   debugger;
-      //   return editable ? (
-      //     <span className="grid gap-x-2" key={`${record.id}`}>
-      //       <Button
-      //         key={`${record.id}_save`}
-      //         type="text"
-      //         icon={CheckCircleOutlined}
-      //         onClick={() => save(record.key)}
-      //         style={{ marginInlineEnd: 8 }}
-      //       />
-      //       <Button
-      //         key={`${record.id}_cancel`}
-      //         icon={CloseCircleOutlined}
-      //         onClick={cancel}
-      //       />
-      //     </span>
-      //   ) : (
-      //     <Button
-      //       type="text"
-      //       key={`${record.id}_edit`}
-      //       icon={EditOutlined}
-      //       disabled={editingKey !== ""}
-      //       onClick={() => edit(record)}
-      //     />
-      //   );
-      // },
+      render: (_: any, record: DataTypeProduct) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <span className="grid grid-cols-2 gap-x-2" key={`${record.id}`}>
+            <Button
+              key={`${record.id}_save`}
+              type="text"
+              title="Lưu"
+              icon={<CheckCircleOutlined />}
+              onClick={() => save(record.id)}
+              style={{ marginInlineEnd: 8 }}
+            />
+            <Button
+              key={`${record.id}_cancel`}
+              type="text"
+              title="Hủy"
+              icon={<CloseCircleOutlined />}
+              onClick={cancel}
+            />
+          </span>
+        ) : (
+          <Button
+            type="text"
+            title="Cập nhật"
+            key={`${record.id}_edit`}
+            icon={<EditOutlined />}
+            disabled={editingKey !== ''}
+            onClick={() => edit(record)}
+          />
+        );
+      },
     },
   ];
 
@@ -152,13 +269,26 @@ function ExportData(props: { control: any; errors: any,
     return '';
   };
 
+  const removeVietnameseAccents = (str: string) => {
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // bỏ dấu
+      .replace(/đ/g, 'd') // bỏ chữ đ
+      .replace(/Đ/g, 'D'); // bỏ chữ Đ
+  };
+
+  const filterOptionSelect = (input: string, option: any) =>
+    removeVietnameseAccents(option?.label ?? '')
+      .toLowerCase()
+      .includes(removeVietnameseAccents(input).toLowerCase());
+
   const EditableCell: React.FC<React.PropsWithChildren<EditableCellProps>> = ({
     editing,
     dataIndex,
     title,
     inputType,
     // record,
-    // index,
+    index,
     isRequired,
     children,
     ...restProps
@@ -176,10 +306,28 @@ function ExportData(props: { control: any; errors: any,
               rules={[
                 {
                   required: true,
-                  message: `Thông tin không được để trống`,
+                  message: ``,
                 },
               ]}
             >
+              {inputType === 'SELECT' && (
+                <Select
+                  options={listProduct.map((item: any) => ({
+                    label: `${item?.code} - ${item?.name}`,
+                    value: item?.code,
+                  }))}
+                  showSearch
+                  autoFocus={index === 0}
+                  filterOption={filterOptionSelect}
+                  onChange={(value) => {
+                    const itemSelected = listProduct.find(
+                      (item) => item.code === value
+                    );
+                    form.setFieldValue('name', itemSelected?.name);
+                    form.setFieldValue('price', itemSelected?.price);
+                  }}
+                />
+              )}
               {inputType === 'INPUT' && (
                 <Input
                   onChange={({ target }) =>
@@ -192,6 +340,9 @@ function ExportData(props: { control: any; errors: any,
                       [dataIndex]: form.getFieldValue(dataIndex)?.trim(),
                     })
                   }
+                  disabled={['name', 'price', 'totalAmount'].includes(
+                    dataIndex
+                  )}
                 />
               )}
               {inputType === 'NUMBER' && (
@@ -205,6 +356,18 @@ function ExportData(props: { control: any; errors: any,
                   min={0}
                   placeholder={title}
                   className="w-full"
+                  disabled={['name', 'price', 'totalAmount'].includes(
+                    dataIndex
+                  )}
+                  onBlur={(e) => {
+                    if (dataIndex === 'quantity') {
+                      const price = form.getFieldValue('price');
+                      form.setFieldValue(
+                        'totalAmount',
+                        Number(e.target.value || 0) * Number(price || 0)
+                      );
+                    }
+                  }}
                 />
               )}
             </Form.Item>
@@ -217,7 +380,7 @@ function ExportData(props: { control: any; errors: any,
   };
 
   const mergedColumns: TableProps<DataTypeProduct>['columns'] = columnTable.map(
-    (col: any) => {
+    (col: any, index: number) => {
       if (!col.editable) {
         return col;
       }
@@ -226,9 +389,13 @@ function ExportData(props: { control: any; errors: any,
       if (['price', 'quantity', 'totalAmount'].includes(col.dataIndex)) {
         inputType = 'NUMBER';
       }
+      if (col.dataIndex === 'code') {
+        inputType = 'SELECT';
+      }
       return {
         ...col,
         onCell: (record: DataTypeProduct) => ({
+          index,
           record,
           inputType,
           dataIndex: col.dataIndex,
@@ -239,56 +406,6 @@ function ExportData(props: { control: any; errors: any,
       };
     }
   );
-
-  // const edit = (record: Partial<DataTypeProduct> & { key: React.Key }) => {
-  //   // form.setFieldsValue({ name: "", age: "", address: "", ...record });
-  //   setEditingKey(record.id as string);
-  // };
-
-  // const cancel = () => {
-  //   setEditingKey("");
-  // };
-
-  // const save = async (key: React.Key) => {
-  //   try {
-  //     const row = (await form.validateFields()) as DataTypeProduct;
-
-  //     const newData = dataTable?.length ? dataTable : [];
-  //     const index = newData.findIndex((item) => key === item.id);
-  //     if (index > -1) {
-  //       const item = newData[index];
-  //       newData.splice(index, 1, {
-  //         ...item,
-  //         ...row,
-  //       });
-  //       setDataTable(newData);
-  //       setEditingKey("");
-  //     } else {
-  //       newData.push(row);
-  //       setDataTable(newData);
-  //       setEditingKey("");
-  //     }
-  //   } catch (errInfo) {
-  //     console.log("Validate Failed:", errInfo);
-  //   }
-  // };
-
-  const handleAdd = () => {
-    const newData = dataTable?.length ? dataTable : [];
-    const fields = columnTable.map((col: any) => col?.field);
-    const objField = Object.fromEntries(
-      fields.map((item) => {
-        return [item, ''];
-      })
-    );
-    const id = uuidv4();
-    newData.push({
-      ...objField,
-      id,
-    });
-    setDataTable(newData);
-    setEditingKey(id);
-  };
 
   const actionHeaderTable = useCallback(
     () => (
@@ -303,6 +420,22 @@ function ExportData(props: { control: any; errors: any,
 
   // ============= EDIT TABLE ==================
 
+  const renderTable = useCallback(() => {
+    return (
+      <Table
+        components={{
+          body: { cell: EditableCell },
+        }}
+        bordered
+        dataSource={dataTable}
+        columns={mergedColumns}
+        rowClassName="editable-row"
+        title={actionHeaderTable}
+        pagination={false}
+      />
+    );
+  }, [dataTable, editingKey]);
+
   return (
     <div className="">
       <p className="text-xl font-[600]">Thông tin khách hàng</p>
@@ -316,17 +449,7 @@ function ExportData(props: { control: any; errors: any,
 
       <p className="text-xl font-[600] mb-3">Thông tin mua hàng</p>
       <Form form={form} component={false}>
-        <Table
-          components={{
-            body: { cell: EditableCell },
-          }}
-          bordered
-          dataSource={dataTable}
-          columns={mergedColumns}
-          rowClassName="editable-row"
-          title={actionHeaderTable}
-          pagination={false}
-        />
+        {renderTable()}
       </Form>
     </div>
   );

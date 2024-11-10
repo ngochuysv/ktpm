@@ -31,3 +31,21 @@ export const listFieldCustomer: Array<InputTypeField> = [
     isRequired: false,
   },
 ];
+
+export const listProduct = [
+  {
+    code: '001',
+    name: 'Sữa tươi',
+    price: 12000,
+  },
+  {
+    code: '002',
+    name: 'Dâu tây',
+    price: 220000,
+  },
+  {
+    code: '003',
+    name: 'Kem tràng tiền (hộp 10 que)',
+    price: 35000,
+  },
+];

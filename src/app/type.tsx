@@ -18,7 +18,8 @@ export interface InputTypeField {
 
 // Thông tin hàng hóa
 export interface DataTypeProduct {
-  id?: string;
+  id: string;
+  code: string;
   name: string;
   price: number | 0;
   quantity?: number | 0;
@@ -27,12 +28,14 @@ export interface DataTypeProduct {
 
 // Thông tin khách hàng
 export type DataRequest = {
-  fullName: string;
+  fullName?: string;
   phoneNumber?: number;
   email?: string;
-  dateOfBirth?: Dayjs;
+  dateOfBirth?: string;
   listProduct?: DataTypeProduct[];
 };
+
+export type fieldDataRequest = keyof Omit<DataRequest, 'listProduct'>;
 
 export interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
   editing: boolean;
