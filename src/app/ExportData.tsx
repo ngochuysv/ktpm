@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-undef */
-/* eslint-disable prettier/prettier */
 
 import {
   CheckCircleOutlined,
