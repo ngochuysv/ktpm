@@ -1,7 +1,14 @@
 {
-  "extends": ["eslint:recommended", "next", "next/core-web-vitals", "prettier", "plugin:prettier/recommended"],
-  "plugins": ["prettier"],
+  // Configuration for JavaScript files
+  "extends": [
+    "eslint:recommended", 
+    "next",
+    "next/core-web-vitals", // Needed to avoid warning in next.js build: 'The Next.js plugin was not detected in your ESLint configuration'
+    "plugin:prettier/recommended"
+  ],
   "rules": {
-    "prettier/prettier": "error"
+    "prettier/prettier": [
+      "error"
+    ] // Avoid conflict rule between Prettier and Airbnb Eslint
   }
 }

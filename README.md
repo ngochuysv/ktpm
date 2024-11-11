@@ -2,42 +2,18 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, run the development server:
+1. Cài đặt NodeJS: https://nodejs.org/en/download/package-manager
+Tải phiên bản 20.x.x
+Check version với: npm --vesion
 
-```bash
-# npm run dev
-# or
-yarn dev
-# or
-# pnpm dev
-# or
-# bun dev
-```
+2. Cài đặt Yarn với npm
+Vào trong thư mục
+Mở Terminal chạy lệnh: npm install --global yarn
+Check version với: yarn --version
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Install dependencies 
+Chạy lệnh yarn install
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-<!-- "eslint-config-prettier": "^9.1.0", // Tắt các quy tắc ESLint có thể xung đột với Prettier
-"eslint-plugin-prettier": "^5.0.1", // Cho phép ESLint chạy Prettier như một quy tắc ESLint để báo lỗi định dạng. -->
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
-
-## Commands I used for configuration of CI/CD in this project.
-
-npm install --save-dev prettier eslint-config-prettier eslint-plugin-prettier
-
-npm install --save-dev husky lint-staged
-
-git init
-npx husky install
-npx husky add .husky/pre-commit "npx lint-staged"
-
-npm install --save-dev @commitlint/{cli,config-conventional}
-
-npx husky add .husky/commit-msg 'npx --no-install commitlint --edit "$1"'  Now create commitlint.config.cjs
-
-// adding this will create static site for next.js 14 for GitHub pages const nextConfig = { output: 'export’}
+4. Chạy project
+Chạy lệnh yarn dev
+Mở [http://localhost:3000](http://localhost:3000)
